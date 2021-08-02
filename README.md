@@ -22,3 +22,9 @@ Versions used in this compilation:
 - [p5.js](http://p5js.org/) v1.3.1 (minimized)
 - [normalize.css](https://github.com/anishathalye/?normalize) v8.0.1
 - structure and HTML based on [HTML5 Boilerplate](https://html5boilerplate.com/) v8.0.0s
+
+
+## Test server with live reload
+
+ 1. npm install -g browser-sync
+ 2. browser-sync start --server -f -w
