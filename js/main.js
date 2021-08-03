@@ -25,44 +25,69 @@ const SNAKE = {
         {
             x: 4,
             y: 0
-        },
-        {
-            x: 3,
-            y: 0
         }
     ]
 }
 
+// contains details of the food
+const FOOD = {
+    x: getRandomBoardCoordinate(),
+    y: getRandomBoardCoordinate()
+}
 // contains the speed value, board refresh rate and snake speed
-const SPEED = 1;
+let SPEED = 1;
 
+// contains the player details and score
+const PLAYER = {
+    name: "TODO",
+    score: 0
+}
 /**
  * P5 oninit function
  */
 function setup() {
     createCanvas(BOARD.boardWidth(), BOARD.boardHeight());
-
-    background('lightgrey');
-    frameRate(SPEED);
 }
 
 /**
  * P5 execution loop
  */
 function draw() {
-    if (SNAKE.positions[0].x < BOARD.blockAmount && SNAKE.positions[0].y < BOARD.blockAmount) {
-        let posX = SNAKE.positions[0].x + SNAKE.movement.x;
-        let posY = SNAKE.positions[0].y + SNAKE.movement.y;
-        SNAKE.positions.unshift({
-            x: posX,
-            y: posY
-        })
-        SNAKE.positions.pop();
-    } else {
-        console.log("crashed into edge")
-        return;
-    }
+    frameRate(SPEED);
+    noStroke();
+    stroke('darkgrey');
+    strokeWeight(5);
+    background('lightgrey');
+    // update positions:
+    let posX = SNAKE.positions[0].x + SNAKE.movement.x;
+    let posY = SNAKE.positions[0].y + SNAKE.movement.y;
+    SNAKE.positions.unshift({
+        x: posX,
+        y: posY
+    })
+    if (hasCrashedIntoEdge()) return;
+    if (!hasSnakeEatenFood()) SNAKE.positions.pop();
+    processFood();
+    // draw snake:
+    SNAKE.positions.forEach(element => {
+        rect(element.x * BOARD.blockSize, element.y * BOARD.blockSize, BOARD.blockSize, BOARD.blockSize);
+    });
 }
+
+
+/**
+ * Checks if snake has reached board edge
+ * @returns true is snake crashed into edge, else false
+ */
+function hasCrashedIntoEdge() {
+    console.log(SNAKE.positions[0].x)
+    if (SNAKE.positions[0].x < 0) return true;
+    if (SNAKE.positions[0].x > BOARD.blockAmount) return true;
+    if (SNAKE.positions[0].y < 0) return true;
+    if (SNAKE.positions[0].y > BOARD.blockAmount) return true;
+    return false
+}
+
 
 /**
  * Arrow keys handler
@@ -86,4 +111,33 @@ function keyPressed() {
         SNAKE.movement.x = 0;
         SNAKE.movement.y = 1;
     }
+}
+
+
+/**
+ * Process the food. Update player score.
+ */
+function processFood() {
+    if (hasSnakeEatenFood()) {
+        // if snake has eaten food:
+        FOOD.x = getRandomBoardCoordinate();
+        FOOD.y = getRandomBoardCoordinate();
+        PLAYER.score++;
+        SPEED += 0.5;
+    }
+    console.log(`Score: ${PLAYER.score}`);
+    ellipse(FOOD.x * BOARD.blockSize + BOARD.blockSize/2, FOOD.y * BOARD.blockSize + BOARD.blockSize/2, BOARD.blockSize);
+}
+
+
+/**
+ * Check if snake has eaten the food
+ * @returns true if snake's head is the same position as the food, else false
+ */
+function hasSnakeEatenFood() {
+    return SNAKE.positions[0].x === FOOD.x && SNAKE.positions[0].y === FOOD.y
+}
+
+function getRandomBoardCoordinate() {
+    return Math.floor(Math.random() * BOARD.blockAmount)
 }
