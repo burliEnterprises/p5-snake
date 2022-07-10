@@ -1,4 +1,8 @@
-//console.info("%c  WELCOME TO BURLI SNAKE  ","background: #009FE3; color: white; font-size: 20px; width: 100%");
+
+let gameStarted = false;
+document.getElementById("btnStartStop").addEventListener("click", function () {
+    gameStarted = !gameStarted;
+})
 
 // contains the board and all properties
 let BOARD = {
@@ -58,23 +62,25 @@ function draw() {
     stroke('darkgrey');
     strokeWeight(5);
     background('lightgrey');
-    // update positions:
-    let posX = SNAKE.positions[0].x + SNAKE.movement.x;
-    let posY = SNAKE.positions[0].y + SNAKE.movement.y;
-    if (hasCrashedIntoItself(posX,posY) || hasCrashedIntoEdge(posX,posY)) {
-        alert("crash");
-        noLoop();
+    if (gameStarted) {
+        // update positions:
+        let posX = SNAKE.positions[0].x + SNAKE.movement.x;
+        let posY = SNAKE.positions[0].y + SNAKE.movement.y;
+        if (hasCrashedIntoItself(posX,posY) || hasCrashedIntoEdge(posX,posY)) {
+            alert("crash");
+            noLoop();
+        }
+        SNAKE.positions.unshift({
+            x: posX,
+            y: posY
+        })
+        if (!hasSnakeEatenFood()) SNAKE.positions.pop();
+        processFood();
+        // draw snake:
+        SNAKE.positions.forEach(element => {
+            rect(element.x * BOARD.blockSize, element.y * BOARD.blockSize, BOARD.blockSize, BOARD.blockSize);
+        });
     }
-    SNAKE.positions.unshift({
-        x: posX,
-        y: posY
-    })
-    if (!hasSnakeEatenFood()) SNAKE.positions.pop();
-    processFood();
-    // draw snake:
-    SNAKE.positions.forEach(element => {
-        rect(element.x * BOARD.blockSize, element.y * BOARD.blockSize, BOARD.blockSize, BOARD.blockSize);
-    });
 }
 
 
