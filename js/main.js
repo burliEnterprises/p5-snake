@@ -2,8 +2,8 @@
 
 // contains the board and all properties
 let BOARD = {
-    blockSize: 50,
-    blockAmount: 10,
+    blockSize: 20,
+    blockAmount: 20,
     boardWidth: function () {
         return this.blockSize * this.blockAmount
     },
@@ -35,7 +35,7 @@ const FOOD = {
     y: getRandomBoardCoordinate()
 }
 // contains the speed value, board refresh rate and snake speed
-let SPEED = 1;
+let SPEED = 5;
 
 // contains the player details and score
 const PLAYER = {
@@ -61,11 +61,14 @@ function draw() {
     // update positions:
     let posX = SNAKE.positions[0].x + SNAKE.movement.x;
     let posY = SNAKE.positions[0].y + SNAKE.movement.y;
+    if (hasCrashedIntoItself(posX,posY) || hasCrashedIntoEdge(posX,posY)) {
+        alert("crash");
+        noLoop();
+    }
     SNAKE.positions.unshift({
         x: posX,
         y: posY
     })
-    if (hasCrashedIntoEdge()) return;
     if (!hasSnakeEatenFood()) SNAKE.positions.pop();
     processFood();
     // draw snake:
@@ -79,13 +82,28 @@ function draw() {
  * Checks if snake has reached board edge
  * @returns true is snake crashed into edge, else false
  */
-function hasCrashedIntoEdge() {
+function hasCrashedIntoEdge(posX, posY) {
     console.log(SNAKE.positions[0].x)
-    if (SNAKE.positions[0].x < 0) return true;
-    if (SNAKE.positions[0].x > BOARD.blockAmount) return true;
-    if (SNAKE.positions[0].y < 0) return true;
-    if (SNAKE.positions[0].y > BOARD.blockAmount) return true;
+    if (posX < 0) return true;
+    if (posX > BOARD.blockAmount) return true;
+    if (posY < 0) return true;
+    if (posY > BOARD.blockAmount) return true;
     return false
+}
+
+/**
+ * Checks if snake has crashed into itself
+ * @returns true is snake crashed into itself, else false
+ */
+function hasCrashedIntoItself(posX, posY) {
+    let hasCrashed = false;
+    SNAKE.positions.forEach(el => {
+        if (el.x === posX && el.y === posY) {
+            console.log(`snake crashed into itself at x=${posX}, y=${posY}`);
+            hasCrashed = true;
+        }
+    });
+    return hasCrashed;
 }
 
 
@@ -119,9 +137,18 @@ function keyPressed() {
  */
 function processFood() {
     if (hasSnakeEatenFood()) {
-        // if snake has eaten food:
-        FOOD.x = getRandomBoardCoordinate();
-        FOOD.y = getRandomBoardCoordinate();
+        // if snake has eaten food place a new one:
+        //  food should only be placed on a non-snake field
+        let foodPlacedOnBody = false;
+        do {
+            FOOD.x = getRandomBoardCoordinate();
+            FOOD.y = getRandomBoardCoordinate();
+            SNAKE.positions.forEach(el => {
+                if (el.x === FOOD.x && el.y === FOOD.y) {
+                    foodPlacedOnBody = true;
+                }
+            });
+        } while (foodPlacedOnBody == true);
         PLAYER.score++;
         SPEED += 0.5;
     }
@@ -141,3 +168,9 @@ function hasSnakeEatenFood() {
 function getRandomBoardCoordinate() {
     return Math.floor(Math.random() * BOARD.blockAmount)
 }
+
+
+// TODO:
+// TODO: score or sum
+// TODO: design und main menu
+// TODO: medium: part 1 game, part 2 firebase?
