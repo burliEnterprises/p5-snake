@@ -1,11 +1,23 @@
-
-let gameStarted = false;
-document.getElementById("btnStartStop").addEventListener("click", function () {
-    gameStarted = !gameStarted;
+let startStopElement = document.getElementById("btnStartStop");
+startStopElement.addEventListener("click", function () {
+    if (BOARD.state == 0) {
+        BOARD.state = 1;
+        startStopElement.innerHTML = "Pause";
+    } else if (BOARD.state == 1) {
+        BOARD.state = 2;
+        startStopElement.innerHTML = "Resume";
+        noLoop();
+    } else if (BOARD.state == 2){
+        BOARD.state = 1;        
+        startStopElement.innerHTML = "Pause";
+        loop();
+      //  redraw();
+    }
 })
 
 // contains the board and all properties
 let BOARD = {
+    state: 0,   // 0 = not started, 1 = resumed, 2 = paused, 3 = crashed
     blockSize: 20,
     blockAmount: 20,
     boardWidth: function () {
@@ -34,7 +46,7 @@ const SNAKE = {
 }
 
 // contains details of the food
-const FOOD = {
+let FOOD = {
     x: getRandomBoardCoordinate(),
     y: getRandomBoardCoordinate()
 }
@@ -42,7 +54,7 @@ const FOOD = {
 let SPEED = 5;
 
 // contains the player details and score
-const PLAYER = {
+let PLAYER = {
     name: "TODO",
     score: 0
 }
@@ -50,7 +62,9 @@ const PLAYER = {
  * P5 oninit function
  */
 function setup() {
-    createCanvas(BOARD.boardWidth(), BOARD.boardHeight());
+    let canvas = createCanvas(BOARD.boardWidth(), BOARD.boardHeight());
+    // https://happycoding.io/tutorials/p5js/web-dev
+    canvas.parent('p5-container');
 }
 
 /**
@@ -62,12 +76,13 @@ function draw() {
     stroke('darkgrey');
     strokeWeight(5);
     background('lightgrey');
-    if (gameStarted) {
+    if (BOARD.state != 0 && BOARD.state != 3) {
         // update positions:
         let posX = SNAKE.positions[0].x + SNAKE.movement.x;
         let posY = SNAKE.positions[0].y + SNAKE.movement.y;
         if (hasCrashedIntoItself(posX,posY) || hasCrashedIntoEdge(posX,posY)) {
-            alert("crash");
+            startStopElement.innerHTML = "Crashed :(";
+            BOARD.state = 3;
             noLoop();
         }
         SNAKE.positions.unshift({
@@ -80,6 +95,8 @@ function draw() {
         SNAKE.positions.forEach(element => {
             rect(element.x * BOARD.blockSize, element.y * BOARD.blockSize, BOARD.blockSize, BOARD.blockSize);
         });
+        PLAYER.score++;
+        document.getElementById("score").innerHTML  = "Score: " + PLAYER.score;  
     }
 }
 
@@ -143,6 +160,7 @@ function keyPressed() {
  */
 function processFood() {
     if (hasSnakeEatenFood()) {
+        PLAYER.score += SPEED * 2;
         // if snake has eaten food place a new one:
         //  food should only be placed on a non-snake field
         let foodPlacedOnBody = false;
